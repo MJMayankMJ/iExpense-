@@ -70,19 +70,43 @@ struct ContentView: View {
     var body: some View {
         NavigationStack {
             List{
-                ForEach(expenses.items) { item in
-                    HStack{
-                        VStack(alignment: .leading) {
-                            Text(item.name)
-                                .font(.headline)
-                            Text(item.type)
+                Section("Personal Expenses") {
+                    ForEach(expenses.items) { item in
+                        if item.type == "Personal" {
+                            HStack{
+                            VStack(alignment: .leading) {
+                                Text(item.name)
+                                    .font(.headline)
+                                Text(item.type)
+                                }
+                            Spacer()
+                            Text(item.amount, format: .currency(code: "USD"))
+                            }
+                            .mealExpenseDesign(cost: item.amount)
                         }
-                        Spacer()
-                        Text(item.amount, format: .currency(code: "USD"))
                     }
-                    .mealExpenseDesign(cost: item.amount)
+                    .onDelete(perform: removeItem)
+                        
                 }
-                .onDelete(perform: removeItem)
+                Section("Business Expenses") {
+                    ForEach(expenses.items) { item in
+                        if item.type == "Business" {
+                            HStack{
+                            VStack(alignment: .leading) {
+                                Text(item.name)
+                                    .font(.headline)
+                                Text(item.type)
+                                }
+                            Spacer()
+                            Text(item.amount, format: .currency(code: "USD"))
+                            }
+                            .mealExpenseDesign(cost: item.amount)
+                        }
+                    }
+                    .onDelete(perform: removeItem)
+                        
+                }
+
             }
             .navigationTitle("iExpense")
             .toolbar{
