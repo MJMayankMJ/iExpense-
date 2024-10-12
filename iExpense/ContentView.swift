@@ -64,6 +64,8 @@ class Expense {
 
 struct ContentView: View {
     
+    @State private var path = [Int]()
+    
     @State private var expenses = Expense()
     @State private var showingAddExpense = false
     
@@ -110,12 +112,15 @@ struct ContentView: View {
             }
             .navigationTitle("iExpense")
             .toolbar{
-                Button("Add Items", systemImage: "plus"){
-                    showingAddExpense = true
+//                Button("Add Items", systemImage: "plus"){
+//                    showingAddExpense = true
+//                }
+//            }
+//            .sheet(isPresented: $showingAddExpense) {
+//                AddView(expenses: expenses)
+                NavigationLink(destination: AddView(expenses: expenses)) {
+                    Image(systemName :"plus")
                 }
-            }
-            .sheet(isPresented: $showingAddExpense) {
-                AddView(expenses: expenses)
             }
         }
     }
