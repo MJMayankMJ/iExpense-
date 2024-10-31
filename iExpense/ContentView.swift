@@ -5,6 +5,7 @@
 //  Created by Mayank Jangid on 9/7/24.
 //
 
+import SwiftData
 import SwiftUI
 
 struct MealExpenseDesign: ViewModifier{
@@ -31,102 +32,59 @@ extension View{
     }
 }
 
-struct ExpenseItem: Identifiable, Codable{
-    //Identifiable is there so to uniquely identify each ExpenseItem (also now we can remove id: \.id in ForEach loop
-    //Codable allows u to archive  and unarchiver through encode and decode.....
-    var id = UUID()
-    let name: String
-    let type: String
-    let amount: Double
-}
-
-@Observable
-class Expense {
-    var items = [ExpenseItem]() {
-        //to decode -- we first encode than save it on the phone
-        // to encode -- first we get the data from storage and than decode the data and than show it...
-        didSet{
-            if let encodedItems = try? JSONEncoder().encode(items){
-                UserDefaults.standard.set(encodedItems, forKey: "Items")
-            }
-        }
-    }
-    init() {
-        if let savedItems = UserDefaults.standard.data(forKey: "Items"){
-            if let decodedItems = try? JSONDecoder().decode([ExpenseItem].self, from: savedItems){
-                items = decodedItems
-                return
-            }
-        }
-        items = []
-    }
-}
-
 struct ContentView: View {
     
-    @State private var path = [Int]()
-    
-    @State private var expenses = Expense()
     @State private var showingAddExpense = false
+    @State private var showBusinessExpenses = false
+    @State private var sortOrder = [
+        SortDescriptor(\ExpenseItem.name),
+        SortDescriptor(\ExpenseItem.amount),
+    ]
+    
+    @Query var expenses: [ExpenseItem]
+    
     
     var body: some View {
         NavigationStack {
             List{
-                Section("Personal Expenses") {
-                    ForEach(expenses.items) { item in
-                        if item.type == "Personal" {
-                            HStack{
-                            VStack(alignment: .leading) {
-                                Text(item.name)
-                                    .font(.headline)
-                                Text(item.type)
-                                }
-                            Spacer()
-                            Text(item.amount, format: .currency(code: "USD"))
-                            }
-                            .mealExpenseDesign(cost: item.amount)
-                        }
-                    }
-                    .onDelete(perform: removeItem)
-                        
-                }
-                Section("Business Expenses") {
-                    ForEach(expenses.items) { item in
-                        if item.type == "Business" {
-                            HStack{
-                            VStack(alignment: .leading) {
-                                Text(item.name)
-                                    .font(.headline)
-                                Text(item.type)
-                                }
-                            Spacer()
-                            Text(item.amount, format: .currency(code: "USD"))
-                            }
-                            .mealExpenseDesign(cost: item.amount)
-                        }
-                    }
-                    .onDelete(perform: removeItem)
-                        
-                }
-
+                SectionView(sortOrder: sortOrder, type: showBusinessExpenses ? "Business" : "Personal")
             }
             .navigationTitle("iExpense")
             .toolbar{
-//                Button("Add Items", systemImage: "plus"){
-//                    showingAddExpense = true
-//                }
-//            }
-//            .sheet(isPresented: $showingAddExpense) {
-//                AddView(expenses: expenses)
-                NavigationLink(destination: AddView(expenses: expenses)) {
-                    Image(systemName :"plus")
+                ToolbarItem(placement: .primaryAction) {
+                    NavigationLink(destination: AddView()) {
+                        Image(systemName :"plus")
+                    }
+                }
+                ToolbarItem(placement: .automatic) {
+                    Menu("Sort", systemImage: "arrow.up.arrow.down") {
+                        Picker("Sort", selection: $sortOrder) {
+                            Text("Sort by name")
+                                .tag([
+                                    SortDescriptor(\ExpenseItem.name),
+                                    SortDescriptor(\ExpenseItem.amount),
+                                ])
+                            
+                            Text("Sort by amount")
+                                .tag([
+                                    SortDescriptor(\ExpenseItem.amount),
+                                    SortDescriptor(\ExpenseItem.name),
+                                ])
+                            
+                            
+                        } //Picker
+                    } //Menu
+                }
+                
+                ToolbarItem(placement: .bottomBar) {
+                    Button(showBusinessExpenses ? "Show Personal" : "Show Business") {
+                        showBusinessExpenses.toggle()
+                    }
                 }
             }
         }
     }
-    func removeItem(at offset : IndexSet){
-        expenses.items.remove(atOffsets: offset)
-    }
+    
 }
 
 #Preview {
