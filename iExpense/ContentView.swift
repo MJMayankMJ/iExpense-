@@ -43,7 +43,6 @@ struct ContentView: View {
     
     @Query var expenses: [ExpenseItem]
     
-    
     var body: some View {
         NavigationStack {
             List{

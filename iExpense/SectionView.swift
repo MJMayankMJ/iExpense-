@@ -22,6 +22,9 @@ struct SectionView: View {
                 Spacer()
                 Text(item.amount, format: .currency(code: "USD"))
                 }
+                .accessibilityElement()
+                .accessibility(label: Text("\(item.name) : \(item.amount)"))
+                .accessibilityHint(item.type)
                 .mealExpenseDesign(cost: item.amount)
             
         }
